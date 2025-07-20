@@ -1,0 +1,83 @@
+import { useEffect, useState } from "react";
+
+type Student = {
+  username: string;
+  password: string;
+};
+
+export default function ManageStudents() {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [form, setForm] = useState<Student>({ username: "", password: "" });
+
+  const fetchStudents = async () => {
+    const res = await fetch("http://localhost:5000/api/students");
+    const data = await res.json();
+    setStudents(data);
+  };
+
+  const addStudent = async () => {
+    if (!form.username || !form.password) {
+      alert("Isi semua field");
+      return;
+    }
+    await fetch("http://localhost:5000/api/students", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    setForm({ username: "", password: "" });
+    fetchStudents();
+  };
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">👤 Kelola Siswa</h1>
+
+      <div className="bg-gray-100 p-4 rounded mb-6">
+        <h2 className="text-lg font-semibold mb-2">➕ Tambah Siswa</h2>
+        <input
+          type="text"
+          placeholder="Username"
+          className="border p-2 mr-2 mb-2"
+          value={form.username}
+          onChange={(e) => setForm({ ...form, username: e.target.value })}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          className="border p-2 mr-2 mb-2"
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+        />
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+          onClick={addStudent}
+        >
+          Simpan
+        </button>
+      </div>
+
+      <h2 className="text-lg font-semibold mb-2">📋 Daftar Siswa</h2>
+      <table className="w-full border text-left">
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="p-2 border">Username</th>
+            <th className="p-2 border">Password</th>
+          </tr>
+        </thead>
+        <tbody>
+          {students.map((s, i) => (
+            <tr key={i}>
+              <td className="p-2 border">{s.username}</td>
+              <td className="p-2 border">{s.password}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
